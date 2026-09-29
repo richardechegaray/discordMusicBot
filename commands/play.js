@@ -4,7 +4,10 @@ const { promisify } = require("util");
 const path = require("path");
 
 const execFileAsync = promisify(execFile);
-const ytdlpBin = path.resolve(__dirname, "../node_modules/@distube/yt-dlp/bin/yt-dlp.exe");
+const ytdlpBin = path.resolve(
+  __dirname,
+  `../node_modules/@distube/yt-dlp/bin/yt-dlp${process.platform === "win32" ? ".exe" : ""}`
+);
 
 async function searchYouTube(query) {
   const { stdout } = await execFileAsync(ytdlpBin, [
