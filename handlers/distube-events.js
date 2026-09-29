@@ -1,42 +1,47 @@
 const { nowPlayingEmbed } = require("../utils/embeds");
 const { formatTime } = require("../utils/helpers");
 
+function send(queue, message) {
+  queue.textChannel?.send(message).catch((err) => console.error("Failed to send message:", err.message));
+}
+
 function registerDistubeEvents(distube) {
   distube.on("playSong", (queue, song) => {
-    queue.textChannel.send(nowPlayingEmbed(queue, song));
+    send(queue, nowPlayingEmbed(queue, song));
   });
 
   distube.on("addSong", (queue, song) => {
-    queue.textChannel.send(
+    send(queue,
       `Added **${song.name}** — ${formatTime(song.duration)} (position ${queue.songs.length - 1} in queue)`
     );
   });
 
   distube.on("addList", (queue, playlist) => {
-    queue.textChannel.send(
+    send(queue,
       `Added playlist **${playlist.name}** — ${playlist.songs.length} song(s)`
     );
   });
 
   distube.on("finish", (queue) => {
     console.log("DisTube: queue finished");
-    queue.textChannel.send("Queue finished! Use `/play` to add more songs.");
+    send(queue, "Queue finished! Use `/play` to add more songs.");
   });
 
   distube.on("disconnect", (queue) => {
     console.log("DisTube: disconnected");
-    queue.textChannel.send("Disconnected from voice channel.");
+    send(queue, "Disconnected from voice channel.");
   });
 
   distube.on("empty", (queue) => {
     console.log("DisTube: voice channel empty");
-    queue.textChannel.send("Everyone left the voice channel — stopping playback.");
+    send(queue, "Everyone left the voice channel — stopping playback.");
+    queue.voice.leave();
   });
 
   distube.on("error", (error, queue) => {
     console.error("DisTube error:", error);
-    if (queue?.textChannel) {
-      queue.textChannel.send(`An error occurred: ${error.message}`);
+    if (queue) {
+      send(queue, `An error occurred: ${error.message}`);
     }
   });
 
